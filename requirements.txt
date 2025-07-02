@@ -1,0 +1,12 @@
+pandas
+numpy
+matplotlib
+scikit-learn
+jupyter
+sentence-transformers
+faiss-cpu
+chromadb
+langchain
+streamlit
+gradio
+openai 
