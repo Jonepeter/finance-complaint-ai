@@ -4,7 +4,9 @@ Data cleaning and preprocessing functions for complaint data.
 
 # Functions will be implemented here. 
 import re
+import pandas as pd
 
+# -------- Clean complaint narrative texts ------------
 def clean_narrative(text):
     """
     Cleans a consumer complaint narrative for improved text processing and embedding quality.
@@ -49,3 +51,29 @@ def clean_narrative(text):
         return text
     except Exception as e:
         print(f"Error cleaning narrative: {e}")
+
+# -------- Loading complaint narrative -----------
+def load_data(filepath, text_column=None):
+    """
+    Loads complaint data from a CSV file and returns a list of narrative texts using pandas.
+
+    Args:
+        filepath (str): Path to the CSV file.
+        text_column (str): Name of the column containing the narrative text.
+
+    Returns:
+        List[str]: List of narrative texts. Returns an empty list if file cannot be read or column is missing.
+    """
+    try:
+        df = pd.read_csv(filepath)
+        if text_column not in df.columns:
+            print(f"Column '{text_column}' not found in {filepath}.")
+            return []
+        # Drop missing or empty narratives
+        narratives = df[text_column].dropna().astype(str)
+        narratives = [text for text in narratives if text.strip()]
+        return narratives
+    except Exception as e:
+        print(f"Error loading data from {filepath}: {e}")
+        return []
+
