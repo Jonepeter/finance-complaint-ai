@@ -29,25 +29,30 @@ This project aims to help CrediTrust Financial transform large volumes of custom
 
 ## Project Structure
 
-```
-finance-complaint-ai/
-├── app.py                  # Gradio/Streamlit app entry point
-├── data/                   # Raw and processed data files
-├── notebooks/              # Jupyter notebooks for EDA and prototyping
-├── outputs/                # Output files (plots, images, etc.)
-├── reports/                # Reports and documentation
-├── requirements.txt        # Python dependencies
-├── src/                    # Source code for data processing, chunking, embedding, RAG logic, and utilities
-│   ├── __init__.py
-│   ├── chunk_and_embed.py
-│   ├── data_preprocessing.py
-│   ├── embedding.py
-│   ├── evaluation.py
-│   ├── rag_pipeline.py
-│   └── utils.py
-├── tests/                  # Unit and integration tests
-├── vector_store/           # Persisted vector database files
-└── .github/                # GitHub Actions workflows and settings
+```markdown
+. 📂 finance-complaint-ai
+├── 📄 README.md
+├── 📄 app.py
+└── 📂 data/
+└── 📂 notebooks/
+│  ├── 📄 01_eda_preprocessing.ipynb
+│  ├── 📄 chunking_embeding.ipynb
+└── 📂 outputs/
+│  ├── 📄 output1.png
+└── 📂 reports/
+├── 📄 requirements.txt
+└── 📂 src/
+│  ├── 📄 __init__.py
+│  └── 📂 __pycache__/
+│  ├── 📄 chunk_and_embed.py
+│  ├── 📄 data_preprocessing.py
+│  ├── 📄 evaluation.py
+│  ├── 📄 rag_pipeline.py
+│  ├── 📄 utils.py
+└── 📂 tests/
+│  ├── 📄 test_rag_pipeline.py
+└── 📂 vector_store/
+
 ```
 
 - **app.py**: Main entry point for the chatbot web app (Gradio/Streamlit).
