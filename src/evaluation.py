@@ -1,5 +1,6 @@
 """
-Evaluation scripts and utilities for RAG pipeline.
+Evaluation metrics and functions for the finance-complaint-ai project.
+Use this module to evaluate model and pipeline performance.
 """
 
-# Functions will be implemented here. 
+# Add evaluation functions below as needed 
