@@ -83,30 +83,65 @@ python app.py
 
 ---
 
-## 💡 Example Usage
+## How to Run Each Part
 
-Ask a question to the chatbot:
+This project is modular. Here's how to execute each major part:
+
+### 1. Data Preprocessing
+- Prepare your data in the `data/` directory (e.g., `filtered_data.parquet` or `filtered_data.csv`).
+- If you need to clean or preprocess data, use or adapt scripts in `src/data_preprocessing.py`.
+
+### 2. Chunking and Embedding
+- Run the chunking and embedding pipeline to build the vector store:
+
+```bash
+python src/chunk_and_embed.py
+```
+- This will process the data and create a FAISS vector store in `vector_store/`.
+
+### 3. Running the App
+- Start the chatbot web app:
+
+```bash
+python app.py
+```
+- This launches a Gradio interface for interacting with the RAG-powered chatbot.
+
+### 4. Running Tests
+- To run all tests:
+
+```bash
+pytest
+```
+- Place your test scripts in the `tests/` directory.
+
+---
+
+## File Naming Conventions
+- Use lowercase letters and underscores for Python files (e.g., `data_preprocessing.py`, `chunk_and_embed.py`).
+- Notebooks should be named descriptively (e.g., `01_eda_preprocessing.ipynb`).
+- Output files and reports should be named to reflect their content or purpose.
+
+---
+
+## Example Usage
+
+**Ask a question using the RAG pipeline in Python:**
+
 ```python
-
 from src.rag_pipeline import ask_question
-result = ask_question(\"What are the most common complaints about credit cards?\")
+result = ask_question("What are the most common complaints about credit cards?")
 print(result['answer'])
 ```
 
 ---
 
-## 🤝 Contributing
+## Onboarding & Contributing
 
-Contributions are welcome! Please open an issue or submit a pull request.
-
----
-
-## 📄 License
-
-This project is licensed under the MIT License.
+- New contributors should start by reading this README and exploring the `notebooks/` for data exploration and prototyping.
+- Follow the file naming conventions for any new scripts or notebooks.
+- Add docstrings and comments to your code to help others understand your logic.
+- For major changes, open an issue or pull request for discussion.
+- If you have questions, open an issue or contact the maintainers.
 
 ---
-
-## 📬 Getting Help
-
-For questions or support, please open an issue or contact the project maintainers.
