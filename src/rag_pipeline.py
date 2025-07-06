@@ -1,5 +1,6 @@
 """
-RAG core logic: retrieval, prompt engineering, and generation.
+RAG pipeline orchestration for finance-complaint-ai.
+This module contains the main logic for retrieval-augmented generation using embeddings and vector stores.
 """
 
 # Functions will be implemented here. 
