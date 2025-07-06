@@ -25,34 +25,88 @@ This project aims to help CrediTrust Financial transform large volumes of custom
 - Python, Pandas, NumPy, scikit-learn
 - Sentence Transformers, FAISS, ChromaDB
 - LangChain, OpenAI API
-- Streamlit, Gradio
+- Gradio
 
 ## Project Structure
 
-- `data/`: Raw and processed data files
-- `notebooks/`: Jupyter notebooks for EDA and prototyping
-- `src/`: Source code for data processing, chunking, embedding, RAG logic, and utilities
-- `vector_store/`: Persisted vector database files
-- `app.py`: Gradio/Streamlit app entry point
-- `reports/`: Reports and documentation
-- `tests/`: Unit and integration tests
-
-## Setup
-
-1. Clone the repository
-2. Install dependencies:
-
-```bash
-
-   pip install -r requirements.txt
+```
+finance-complaint-ai/
+├── app.py                  # Gradio/Streamlit app entry point
+├── data/                   # Raw and processed data files
+├── notebooks/              # Jupyter notebooks for EDA and prototyping
+├── outputs/                # Output files (plots, images, etc.)
+├── reports/                # Reports and documentation
+├── requirements.txt        # Python dependencies
+├── src/                    # Source code for data processing, chunking, embedding, RAG logic, and utilities
+│   ├── __init__.py
+│   ├── chunk_and_embed.py
+│   ├── data_preprocessing.py
+│   ├── embedding.py
+│   ├── evaluation.py
+│   ├── rag_pipeline.py
+│   └── utils.py
+├── tests/                  # Unit and integration tests
+├── vector_store/           # Persisted vector database files
+└── .github/                # GitHub Actions workflows and settings
 ```
 
-3.Run the app:
+- **app.py**: Main entry point for the chatbot web app (Gradio/Streamlit).
+- **data/**: Contains raw and processed datasets.
+- **notebooks/**: Jupyter notebooks for exploratory data analysis and prototyping.
+- **outputs/**: Stores generated outputs such as plots and images.
+- **reports/**: Project reports and additional documentation.
+- **requirements.txt**: List of Python dependencies.
+- **src/**: All core source code modules for data processing, chunking, embedding, RAG pipeline, and utilities.
+- **tests/**: Unit and integration tests for the codebase.
+- **vector_store/**: Directory for storing FAISS or other vector database files.
+- **.github/**: Contains GitHub Actions workflows and repository settings.
+
+## ⚡ Quickstart
+
+### Prerequisites
+
+- Python 3.13.1
+
+### Installation
 
 ```bash
-   python app.py
+git clone https://github.com/<your-username>/<your-repo>.git
+cd <your-repo>
+pip install -r requirements.txt
 ```
 
-## Getting Help
+### Running the App
+
+```bash
+python app.py
+```
+
+---
+
+## 💡 Example Usage
+
+Ask a question to the chatbot:
+```python
+
+from src.rag_pipeline import ask_question
+result = ask_question(\"What are the most common complaints about credit cards?\")
+print(result['answer'])
+```
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Please open an issue or submit a pull request.
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License.
+
+---
+
+## 📬 Getting Help
 
 For questions or support, please open an issue or contact the project maintainers.
