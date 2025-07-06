@@ -1,5 +1,6 @@
 """
-Text chunking logic for splitting complaint narratives.
+Text chunking and embedding pipeline for splitting and embedding complaint narratives in finance-complaint-ai.
+Provides a class-based pipeline for chunking, embedding, and indexing complaint data.
 """
 import numpy as np
 import pandas as pd
