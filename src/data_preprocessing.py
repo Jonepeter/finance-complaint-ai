@@ -1,5 +1,6 @@
 """
-Data cleaning and preprocessing class for complaint data.
+Data cleaning and preprocessing class for complaint data in finance-complaint-ai.
+Provides methods for loading and cleaning narrative data.
 """
 
 # Functions will be implemented here. 
