@@ -1,59 +1,32 @@
-"""
-RAG pipeline orchestration for finance-complaint-ai.
-This module contains the main logic for retrieval-augmented generation using embeddings and vector stores.
-"""
+from sentence_transformers import SentenceTransformer
+import faiss
+import pickle
+from transformers import pipeline
 
-# Functions will be implemented here. 
-from langchain.llms import HuggingFaceHub
-from langchain.prompts import PromptTemplate
-from langchain.vectorstores import FAISS
-from langchain.embeddings import HuggingFaceEmbeddings
-from langchain.chains import RetrievalQA
+class RAGPipeline:
+    def __init__(self, model_name='all-MiniLM-L6-v2', llm_model='mistralai/Mistral-7B-Instruct-v0.1'):
+        self.embedder = SentenceTransformer(model_name)
+        self.index = faiss.read_index("vector_store/faiss.index")
+        with open("vector_store/metadata.pkl", "rb") as f:
+            self.metadata = pickle.load(f)
+        self.llm = pipeline("text-generation", model=llm_model)
 
-# Load vector store
-embedding_model = HuggingFaceEmbeddings(
-    model_name="sentence-transformers/all-MiniLM-L6-v2"
-)
-vector_store = FAISS.load_local(
-    "../vector_store/creditrust_faiss_index",
-    embedding_model
-)
+    def retrieve(self, query, k=5):
+        vec = self.embedder.encode([query])
+        D, I = self.index.search(vec, k)
+        results = [(I[0][i], self.metadata[I[0][i]]) for i in range(k)]
+        return results
 
-# Initialize LLM
-llm = HuggingFaceHub(
-    repo_id="mistralai/Mistral-7B-Instruct-v0.1",
-    model_kwargs={"temperature": 0.1, "max_length": 1000}
-)
+    def generate_prompt(self, context, question):
+        return f"""You are a financial analyst assistant for CrediTrust. Your task is to answer questions about customer complaints. 
+                Use the following retrieved complaint excerpts to formulate your answer. If the context doesn't contain the answer, state that you don't have enough information. 
+                Context:{context}
 
-# Prompt template
-prompt_template = """You are a financial analyst assistant for CrediTrust. 
-Your task is to answer questions about customer complaints. 
-Use only the following retrieved complaint excerpts to formulate your answer. 
-If the context doesn't contain the answer, state that you don't have enough information.
+                Question: {question}
+                Answer: """
 
-Context: {context}
-
-Question: {question}
-
-Answer in a concise, professional manner:"""
-
-PROMPT = PromptTemplate(
-    template=prompt_template, 
-    input_variables=["context", "question"]
-)
-
-# Create RAG chain
-qa_chain = RetrievalQA.from_chain_type(
-    llm=llm,
-    chain_type="stuff",
-    retriever=vector_store.as_retriever(search_kwargs={"k": 5}),
-    chain_type_kwargs={"prompt": PROMPT},
-    return_source_documents=True
-)
-
-def ask_question(question):
-    result = qa_chain({"query": question})
-    return {
-        "answer": result["result"],
-        "sources": result["source_documents"]
-    }
+    def answer(self, question):
+        results = self.retrieve(question)
+        context = "\n\n".join([self.metadata[i]['product'] + ": " + documents[i] for i, _ in results])
+        prompt = self.generate_prompt(context, question)
+        return self.llm(prompt, max_new_tokens=150)[0]['generated_text'], results
