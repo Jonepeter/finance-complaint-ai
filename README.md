@@ -140,6 +140,62 @@ print(result['answer'])
 ```
 
 ---
+## Setup and Installation
+
+Follow these steps to get the project up and running:
+
+1.  **Clone the Repository (if applicable):**
+    ```bash
+    git clone [https://github.com/your-username/finance-complaint-ai.git](https://github.com/Jonepeter/finance-complaint-ai.git)
+    cd finance-complaint-ai/rag_chatbot
+    ```
+    (Note: This is a placeholder for `your-username/finance-complaint-ai` as the original repo was inaccessible. If you are creating a new repo, start from `rag_chatbot` directory.)
+
+2. **Create a Virtual Environment (Recommended):**
+    ```bash
+    python -m venv .venv
+    source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+    ```
+
+3.  **Install Dependencies:**
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+4. **Configure Environment Variables:**
+    - Rename `.env.example` to `.env`:
+        ```bash
+        mv .env.example .env  # On Windows: copy .env.example .env
+        ```
+
+    - Open the `.env` file and configure the paths and model choices:
+
+        - `EMBEDDING_MODEL`: Choose a suitable HuggingFace model (e.g., `all-MiniLM-L6-v2`).
+
+## Running the Chatbot
+
+After completing the setup:
+
+1. **Ensure your virtual environment is active.**
+2. **Run the main application script:**
+
+```bash
+    python app.py
+```
+
+This will set up the RAG pipeline, load/process your data, and launch the Gradio web interface. Open the URL provided by Gradio (usually `http://127.0.0.1:7860`) in your web browser to interact with the chatbot.
+
+## Customization and Extension
+
+**Data:** Add more `.txt` files to the `data/` directory to expand the chatbot's knowledge base.
+**Text Processing:** Adjust `chunk_size` and `chunk_overlap` in `text_processor.py` for different document types.
+**Embeddings:** Change the `EMBEDDING_MODEL` in `.env` to experiment with different embedding models.
+**LLM:** Switch the `LLM_MODEL` in `.env` to use OpenAI's models (with API key) or a local Ollama model.
+**Prompt Engineering:** Modify the `PROMPT_TEMPLATE` in `.env` or directly in `rag_pipeline.py` to refine the chatbot's response style and accuracy.
+**Vector Store:** While ChromaDB is used, the `vector_store_manager.py` can be extended to support other vector databases (e.g., FAISS, Pinecone, Qdrant).
+**Gradio UI:** Customize the `chatbot_interface.py` to change the layout, add more components, or modify the theme of the Gradio application.
+
+---
 
 ## Onboarding & Contributing
 
