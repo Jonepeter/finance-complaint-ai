@@ -66,3 +66,47 @@ def evaluation_table_to_markdown(df, filepath=None):
         with open(filepath, "w", encoding="utf-8") as f:
             f.write(markdown)
     return markdown
+
+# Example usage: Run qualitative evaluation on representative questions
+if __name__ == "__main__":
+    import pandas as pd
+    from src.rag_pipeline import RAGPipeline
+    # Define representative questions for the system
+    representative_questions = [
+        "What are the most common complaints about credit card billing?",
+        "How does CrediTrust handle disputes regarding loan payments?",
+        "What steps should a customer take if their account is closed without notice?",
+        "Are there frequent issues reported about mortgage application delays?",
+        "How does the company respond to complaints about incorrect credit reporting?",
+        "What are typical resolutions for complaints about overdraft fees?",
+        "Is there a trend in complaints related to online banking security?",
+        "How long does it usually take to resolve a complaint about unauthorized transactions?",
+        "What support is available for customers facing identity theft?",
+        "Are there any recurring issues with customer service responsiveness?"
+    ]
+    # Initialize the RAG pipeline
+    rag = RAGPipeline()
+    # Define a wrapper to match the expected interface for qualitative_evaluation
+    def rag_pipeline_wrapper(question):
+        answer, retrievals = rag.answer(question)
+        # retrievals is a list of (index, metadata) tuples
+        sources = []
+        for idx, meta in retrievals:
+            # Try to extract a representative text from metadata
+            # If 'complaint_what_happened' or similar exists, use it; else, str(meta)
+            text = meta.get('complaint_what_happened') if isinstance(meta, dict) and 'complaint_what_happened' in meta else str(meta)
+            sources.append(text)
+        return {
+            "answer": answer,
+            "sources": sources
+        }
+    # Run qualitative evaluation
+    eval_df = qualitative_evaluation(
+        rag_pipeline=rag_pipeline_wrapper,
+        questions=representative_questions,
+        top_k_sources=3
+    )
+    # Output the evaluation table as Markdown
+    markdown_table = evaluation_table_to_markdown(eval_df, filepath="qualitative_evaluation.md")
+    print("\nEvaluation Table (Markdown):\n")
+    print(markdown_table)
