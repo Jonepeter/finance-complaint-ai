@@ -88,6 +88,10 @@ python app.py
 
 ---
 
+## Workflow
+
+- Data → Chunking → Embeddings → FAISS → Retrieval → LLM Response
+
 ## How to Run Each Part
 
 This project is modular. Here's how to execute each major part:
@@ -140,6 +144,7 @@ print(result['answer'])
 ```
 
 ---
+
 ## Setup and Installation
 
 Follow these steps to get the project up and running:
@@ -157,20 +162,10 @@ Follow these steps to get the project up and running:
     source .venv/bin/activate  # On Windows: .venv\Scripts\activate
     ```
 
-3.  **Install Dependencies:**
+3. **Install Dependencies:**
     ```bash
     pip install -r requirements.txt
     ```
-
-4. **Configure Environment Variables:**
-    - Rename `.env.example` to `.env`:
-        ```bash
-        mv .env.example .env  # On Windows: copy .env.example .env
-        ```
-
-    - Open the `.env` file and configure the paths and model choices:
-
-        - `EMBEDDING_MODEL`: Choose a suitable HuggingFace model (e.g., `all-MiniLM-L6-v2`).
 
 ## Running the Chatbot
 
