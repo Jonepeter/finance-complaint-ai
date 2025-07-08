@@ -2,7 +2,7 @@
 import streamlit as st
 from src.rag_pipeline import RAGPipeline
 
-class CrediTrustApp:
+class finance_complaint_ai:
     def __init__(self):
         self.rag = RAGPipeline()
         self.user_input = ""
@@ -27,7 +27,7 @@ class CrediTrustApp:
             st.experimental_rerun()
 
 def main():
-    app = CrediTrustApp()
+    app = finance_complaint_ai()
     app.run()
 
 if __name__ == "__main__":
