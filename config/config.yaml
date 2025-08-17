@@ -1,0 +1,43 @@
+# Configuration for CrediTrust Complaint Analysis System
+
+# Data Configuration
+data:
+  raw_data_path: "../data/raw/"
+  processed_data_path: "../data/processed/"
+  filtered_data_file: "../data/processed/filtered_complaints.parquet"
+  
+# Model Configuration
+model:
+  embedding_model: "sentence-transformers/all-MiniLM-L6-v2"
+  llm_model: "microsoft/DialoGPT-medium"
+  chunk_size: 500
+  chunk_overlap: 50
+  top_k_retrieval: 5
+
+# Vector Store Configuration
+vector_store:
+  type: "faiss"
+  index_path: "vector_store/faiss_index_real"
+  metadata_path: "vector_store/metadata_real.json"
+
+# Products Configuration
+products:
+  target_products:
+    - "Credit card"
+    - "Personal loan" 
+    - "Buy Now, Pay Later (BNPL)"
+    - "Savings account"
+    - "Money transfers"
+
+# Dashboard Configuration
+dashboard:
+  host: "0.0.0.0"
+  port: 8050
+  debug: true
+
+# Chat Interface Configuration
+chat:
+  host: "0.0.0.0"         # Host address for the chat interface server
+  port: 7860              # Port number for the chat interface server
+  max_tokens: 512         # Maximum number of tokens in the chat response
+  temperature: 0.7        # Sampling temperature for response generation (controls randomness)
