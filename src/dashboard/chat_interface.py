@@ -1,29 +1,35 @@
-"""Streamlit chat interface for RAG system."""
+"""Streamlit chat interface for RAG system (refined for a better chat experience).
+
+This module provides a Streamlit-based chat interface for interacting with a Retrieval-Augmented Generation (RAG) system.
+It includes error handling, user experience improvements, and clear code comments for maintainability.
+"""
 
 import os
 
+# Suppress TensorFlow and ONEDNN warnings for a cleaner Streamlit log
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"
 
 import streamlit as st
-import pandas as pd
 from pathlib import Path
 import sys
-import os
 import logging
 
+# Set up logger for error tracking and debugging
 logger = logging.getLogger(__name__)
-import time
 
-# Add project root to path
+# Add project root to sys.path for module imports
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
 if project_root not in sys.path:
     sys.path.append(project_root)
 
+# Attempt to import required modules, handle import errors gracefully
 try:
     from src.rag.rag_pipeline import RAGPipeline
     from src.utils.config_loader import load_config
+    from src.utils.speech_handler import SpeechHandler
 except ImportError as e:
+    # Show error in Streamlit UI and stop execution if imports fail
     st.error(f"Failed to import required modules: {e}")
     st.stop()
 
@@ -32,52 +38,45 @@ class ChatInterface:
     """Streamlit chat interface for complaint analysis."""
 
     def __init__(self):
+        # Load configuration and initialize pipeline and speech handler
         self.config = load_config()
         self.rag_pipeline = None
+        self.speech_handler = SpeechHandler()
         self._initialize_pipeline()
 
     def _initialize_pipeline(self):
-        """Initialize RAG pipeline."""
+        """Initialize RAG pipeline and load vector store if available.
+
+        Handles errors during initialization and notifies the user.
+        """
         try:
             self.rag_pipeline = RAGPipeline(self.config)
-
-            # Try to load existing vector store
-            # os.path.join("../../", config["vector_store"]["metadata_path"])
+            # Construct paths for vector store index and metadata
             index_path = os.path.join(
                 project_root, self.config["vector_store"]["index_path"]
             )
             metadata_path = os.path.join(
                 project_root, self.config["vector_store"]["metadata_path"]
             )
-            # logger.info(f"Attempting to load vector store from {index_path} ")
-
+            # Check if vector store files exist before loading
             if Path(index_path).exists() and Path(metadata_path).exists():
                 self.rag_pipeline.load_vector_store(index_path, metadata_path)
-                st.success("Vector store loaded successfully!")
+                st.toast("Vector store loaded successfully!", icon="✅")
             else:
                 st.warning(
                     "Vector store not found. Please build it first using the build script."
                 )
-
         except Exception as e:
+            # Log and display error if pipeline initialization fails
             st.error(f"Error initializing RAG pipeline: {e}")
 
     def render_sidebar(self):
-        """Render sidebar with system information."""
-        st.sidebar.title("🏦 CrediTrust AI Assistant")
-        st.sidebar.markdown("---")
+        """Render sidebar with system information and sample questions.
 
-        st.sidebar.subheader("📊 System Status")
-        if self.rag_pipeline and self.rag_pipeline.embedding_manager.index:
-            st.sidebar.success("RAG System Ready")
-            st.sidebar.info(
-                f"📚 {len(self.rag_pipeline.embedding_manager.metadata)} chunks indexed"
-            )
-        else:
-            st.sidebar.error("RAG System Not Ready")
-
-        st.sidebar.markdown("---")
-        st.sidebar.subheader("--- Sample Questions ---")
+        Provides users with example queries and information about the app.
+        """
+        # Display sample questions for user inspiration
+        st.subheader("💬 Sample Questions")
         sample_questions = [
             "What are the main credit card issues?",
             "What problems do customers face with loans?",
@@ -85,160 +84,299 @@ class ChatInterface:
             "What are common billing disputes?",
             "Why are people unhappy with BNPL?",
         ]
-
-        for question in sample_questions:
-            if st.sidebar.button(question, key=f"sample_{hash(question)}"):
+        for i, question in enumerate(sample_questions):
+            # Allow users to click a sample question to populate the input
+            if st.write(question, key=f"sample_{i}"):
                 st.session_state.current_question = question
 
-    def render_chat_interface(self):
-        """Render main chat interface."""
-        st.title("🤖 Customer Complaint Analysis Assistant")
-        st.markdown(
-            "Ask me anything about customer complaints across our financial products!"
+        st.divider()
+
+        # About section for app description
+        st.subheader("About")
+        st.info(
+            """
+            CrediTrust Financial AI is an interactive chat interface developed by 10 Academy in 2025.
+            This application leverages Retrieval-Augmented Generation (RAG) to help users explore and analyze real-world financial complaints.
+            Ask questions about credit cards, loans, BNPL, and more to receive instant, AI-powered insights based on real complaint data.
+            """
         )
 
-        # Initialize session state
+        st.divider()
+
+    def render_chat_interface(self):
+        """Render main chat interface with improved UX.
+
+        Handles chat history, user input, speech input, and AI responses.
+        """
+        # Display header and welcome message
+        st.markdown(
+            '<div class="header"><h1>💬 CrediTrust Financial AI </h1><p>Start a conversation with our AI assistant</p></div>',
+            unsafe_allow_html=True,
+        )
+        st.info(
+            "Welcome to the CrediTrust Financial AI chat! Ask any question about financial complaints, products, or issues and get instant, AI-powered answers."
+        )
+        # Initialize session state for chat messages and current question
         if "messages" not in st.session_state:
             st.session_state.messages = []
         if "current_question" not in st.session_state:
             st.session_state.current_question = ""
 
-        # Display chat history
-        for message in st.session_state.messages:
-            with st.chat_message(message["role"]):
-                st.markdown(message["content"])
+        chat_container = st.container()
 
-                # Display sources if available
-                if message["role"] == "assistant" and "sources" in message:
-                    self._display_sources(message["sources"])
+        # Display chat history (user and assistant messages)
+        with chat_container:
+            for message in st.session_state.messages:
+                with st.chat_message(message["role"]):
+                    st.markdown(message["content"], unsafe_allow_html=True)
+                    # Show sources if present in assistant's message
+                    if message["role"] == "assistant" and "sources" in message:
+                        self._display_sources(message["sources"])
 
-        # Chat input
-        question = (
-            st.chat_input("Ask about customer complaints...")
-            or st.session_state.current_question
-        )
+        # Layout for speech input button and chat input box
+        input_col1, input_col2 = st.columns([5, 1])
 
+        # Speech input button (microphone)
+        with input_col2:
+            if st.button("🎤", help="Click to speak", key="speech_btn"):
+                with st.spinner("Listening..."):
+                    speech_text = self.speech_handler.listen_once()
+                    # Only accept valid speech input (filter out errors)
+                    if speech_text and not speech_text.startswith(
+                        ("Could not", "Speech service", "No speech", "Error:")
+                    ):
+                        st.session_state.current_question = speech_text
+                        st.rerun()
+                    else:
+                        st.error(f"Speech failed: {speech_text}")
+
+        # Chat input box for user text input
+        with input_col1:
+            question = (
+                st.chat_input("Type your message here...")
+                or st.session_state.current_question
+            )
+
+        # If user submits a question (via text or speech)
         if question:
-            # Clear current question
             st.session_state.current_question = ""
+            # Add user message to chat history with timestamp
+            import datetime
 
-            # Add user message
-            st.session_state.messages.append({"role": "user", "content": question})
-            with st.chat_message("user"):
-                st.markdown(question)
+            timestamp = datetime.datetime.now().strftime("%H:%M:%S")
+            st.session_state.messages.append(
+                {"role": "user", "content": question, "timestamp": timestamp}
+            )
+            with chat_container:
+                with st.chat_message("user"):
+                    st.markdown(question)
+                    st.markdown(
+                        f'<div class="timestamp">{timestamp}</div>',
+                        unsafe_allow_html=True,
+                    )
 
-            # Generate response
-            with st.chat_message("assistant"):
-                if self.rag_pipeline and self.rag_pipeline.embedding_manager.index:
-                    try:
-                        with st.spinner("Analyzing complaints..."):
-                            response = self.rag_pipeline.generate_response(question)
+            # Generate and display assistant's response
+            with chat_container:
+                with st.chat_message("assistant"):
+                    # Check if RAG pipeline and vector index are ready
+                    if self.rag_pipeline and getattr(
+                        self.rag_pipeline.embedding_manager, "index", None
+                    ):
+                        try:
+                            full_response = ""
+                            sources = []
+                            response_placeholder = st.empty()
+                            spinner = st.spinner("Thinking...")
 
-                        # Display answer in a beautiful format
-                        st.markdown(
-                            f"""
-                            <div style="background-color: #f0f4f8; border-radius: 10px; padding: 20px; margin-bottom: 10px; border: 1px solid #e0e0e0;">
-                                <h4 style="color: #2a5298; margin-top: 0;">💡 Assistant's Answer</h4>
-                                <div style="font-size: 1.1em; color: #222;">
-                                    {response["answer"]}
-                                </div>
-                            </div>
-                            """,
-                            unsafe_allow_html=True,
-                        )
+                            # Stream response from RAG pipeline for better UX
+                            with spinner:
+                                for (
+                                    chunk
+                                ) in self.rag_pipeline.generate_streaming_response(
+                                    question
+                                ):
+                                    if chunk.get("done"):
+                                        break
+                                    if "answer" in chunk:
+                                        full_response += chunk["answer"]
+                                        sources = chunk.get("sources", [])
+                                        # Live update of assistant's response
+                                        response_placeholder.markdown(
+                                            f"""
+                                                {full_response}
+                                            """
+                                        )
+                            # Display sources if available
+                            if sources:
+                                self._display_sources(sources)
+                            # Add assistant's response to chat history with timestamp
+                            timestamp = datetime.datetime.now().strftime("%H:%M:%S")
+                            st.session_state.messages.append(
+                                {
+                                    "role": "assistant",
+                                    "content": full_response,
+                                    "sources": sources,
+                                    "timestamp": timestamp,
+                                }
+                            )
+                            st.markdown(
+                                f'<div class="timestamp">{timestamp}</div>',
+                                unsafe_allow_html=True,
+                            )
+                        except Exception as e:
+                            # Log and display error if response generation fails
+                            logger.error(
+                                f"Error generating response for '{question}': {e}",
+                                exc_info=True,
+                            )
+                            error_msg = "⚠️ I encountered an error while processing your question. Please try again."
+                            st.error(error_msg)
+                            timestamp = datetime.datetime.now().strftime("%H:%M:%S")
+                            st.session_state.messages.append(
+                                {
+                                    "role": "assistant",
+                                    "content": error_msg,
+                                    "timestamp": timestamp,
+                                }
+                            )
+                            st.markdown(
+                                f'<div class="timestamp">{timestamp}</div>',
+                                unsafe_allow_html=True,
+                            )
+                    else:
+                        # Handle case where RAG system is not ready (e.g., vector store missing)
+                        error_msg = "RAG system is not ready. Please ensure the vector store is built."
+                        st.error(error_msg)
+                        import datetime
 
-                        # Display sources
-                        if response["sources"]:
-                            self._display_sources(response["sources"])
-
-                        # Add to session state
+                        timestamp = datetime.datetime.now().strftime("%H:%M:%S")
                         st.session_state.messages.append(
                             {
                                 "role": "assistant",
-                                "content": response["answer"],
-                                "sources": response["sources"],
+                                "content": error_msg,
+                                "timestamp": timestamp,
                             }
                         )
-                    except Exception as e:
-                        logger.error(
-                            f"Error generating response for '{question}': {e}",
-                            exc_info=True,
+                        st.markdown(
+                            f'<div class="timestamp">{timestamp}</div>',
+                            unsafe_allow_html=True,
                         )
-                        error_msg = "I encountered an error while processing your question. Please try again."
-                        st.error(error_msg)
-                        st.session_state.messages.append(
-                            {"role": "assistant", "content": error_msg}
-                        )
-                else:
-                    error_msg = "RAG system is not ready. Please ensure the vector store is built."
-                    st.error(error_msg)
-                    st.session_state.messages.append(
-                        {"role": "assistant", "content": error_msg}
-                    )
 
     def _display_sources(self, sources):
-        """Display source information."""
+        """Display source information in a compact, readable way.
+
+        Shows the top 3 sources (complaints) that contributed to the answer.
+        """
         if not sources:
             return
-
         with st.expander(
-            f"📚 View Sources ({len(sources)} complaints)", expanded=False
+            f"📚 View Top Sources ({len(sources)} complaints)", expanded=False
         ):
             for i, source in enumerate(sources[:3], 1):  # Show top 3 sources
                 st.markdown(
-                    f"**Source {i}** (Similarity: {source['similarity_score']:.2f})"
+                    f"""
+                    <div style="background-color:#f6f8fa; border-radius:7px; padding:10px; margin-bottom:8px; border:1px solid #e0e0e0;">
+                        <b>Source {i}</b> <span style="color:#888;">(Similarity: {source.get('similarity_score',0):.2f})</span><br>
+                        <b>Product:</b> {source.get('product','-')}<br>
+                        <b>Issue:</b> {source.get('issue','-')}<br>
+                        <b>Date:</b> {source.get('date','-')}<br>
+                        <b>Text:</b> {source.get('chunk_text','')[:300]}...
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
                 )
-                st.markdown(f"- **Product**: {source['product']}")
-                st.markdown(f"- **Issue**: {source['issue']}")
-                st.markdown(f"- **Date**: {source['date']}")
-                st.markdown(f"- **Text**: {source['chunk_text'][:300]}...")
-                st.markdown("---")
-
-    def render_clear_button(self):
-        """Render clear conversation button."""
-        if st.button("🗑️ Clear Conversation", type="secondary"):
-            st.session_state.messages = []
-            st.rerun()
 
     def run(self):
-        """Run the Streamlit app."""
+        """Run the Streamlit app with improved layout and style.
+
+        Sets up the page, applies custom CSS, and arranges the chat and sidebar.
+        """
         st.set_page_config(
-            page_title="Complaint AI Assistant", page_icon="🏦", layout="wide"
+            page_title="Complaint AI Assistant", page_icon="🤖", layout="wide"
         )
 
-        # Custom CSS
+        # Custom CSS for chat bubbles, sidebar, and layout
         st.markdown(
             """
-        <style>
-        .stChatMessage {
-            background-color: #f0f2f6;
-            border-radius: 10px;
-            padding: 10px;
-            margin: 5px 0;
-        }
-        .stExpander {
-            background-color: #ffffff;
-            border: 1px solid #e0e0e0;
-            border-radius: 5px;
-        }
-        </style>
-        """,
+            <style>
+            .main {
+                padding: 0rem 1rem;
+            }
+            .stChatMessage {
+                padding: 1rem;
+                border-radius: 0.5rem;
+                margin-bottom: 0.75rem;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+            .stChatMessage [data-testid="stChatMessageContent"] {
+                padding: 0.5rem 1rem;
+            }
+            .stChatMessage [data-testid="stChatMessageAvatar"] {
+                display: none;
+            }
+            .user-message {
+                background-color: #2b313e;
+                color: white;
+            }
+            .assistant-message {
+                background-color: #f0f2f6;
+            }
+            .chat-input {
+                position: fixed;
+                bottom: 3rem;
+                left: 0;
+                right: 0;
+                padding: 0 1rem;
+                background-color: #0e1117;
+                z-index: 999;
+            }
+            .header {
+                background: linear-gradient(90deg, #373B44, #4286f4);
+                padding: 1.5rem;
+                border-radius: 0.5rem;
+                margin-bottom: 1.5rem;
+                color: white;
+                text-align: center;
+                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            }
+            .timestamp {
+                font-size: 0.7rem;
+                color: #9ca3af;
+                margin-top: 0.25rem;
+            }
+            .stExpander {
+                background-color: #ffffff;
+                border: 1px solid #e0e0e0;
+                border-radius: 5px;
+            }
+            .block-container {
+                padding-top: 1.5rem;
+                padding-bottom: 1.5rem;
+            }
+            .stButton>button {
+                border-radius: 6px;
+                font-size: 1em;
+            }
+            </style>
+            """,
             unsafe_allow_html=True,
         )
 
-        # Layout
-        col1, col2 = st.columns([3, 1])
+        # Layout: chat on left, sidebar on right
+        col1, col2 = st.columns([4, 1], gap="large")
 
         with col1:
             self.render_chat_interface()
-            self.render_clear_button()
 
         with col2:
             self.render_sidebar()
 
 
 def main():
-    """Main function to run the chat interface."""
+    """Main function to run the chat interface.
+
+    Instantiates the ChatInterface and starts the Streamlit app.
+    """
     chat_app = ChatInterface()
     chat_app.run()
 
