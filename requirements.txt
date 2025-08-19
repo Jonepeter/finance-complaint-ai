@@ -33,3 +33,11 @@ pydantic
 loguru
 tqdm
 PyYAML
+
+# Testing
+pytest
+pytest-cov
+
+# Speech Recognition
+SpeechRecognition
+pyaudio
