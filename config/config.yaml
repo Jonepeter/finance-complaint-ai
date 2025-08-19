@@ -8,11 +8,13 @@ data:
   
 # Model Configuration
 model:
-  embedding_model: "sentence-transformers/all-MiniLM-L6-v2"
-  llm_model: "microsoft/DialoGPT-medium"
+  embedding_model: "all-MiniLM-L6-v2"
+  llm_model: "deepseek-ai/DeepSeek-V3-0324"
   chunk_size: 500
   chunk_overlap: 50
   top_k_retrieval: 5
+  llm_model_path: "src/dashboard/models/mistral-7b-instruct"
+
 
 # Vector Store Configuration
 vector_store:
