@@ -13,13 +13,12 @@ CrediTrust Financial's AI platform empowers internal teams to quickly understand
 
 ### Key Features
 - **🤖 AI Chat Assistant**: Natural language queries with source attribution
-- **📊 Analytics Dashboard**: Real-time complaint insights and trends
 - **🔍 Semantic Search**: Advanced RAG pipeline for intelligent retrieval
 - **📈 Business Intelligence**: Proactive issue identification and resolution
 
 ## 🏗️ Project Structure
 
-```
+```bash
 CrediTrust-AI-Platform/
 ├── src/
 │   ├── rag/                    # RAG pipeline components
@@ -64,7 +63,7 @@ pip install -r requirements.txt
 
 ### 2. Data Setup
 
-Ensure `filtered_data.parquet` is in the root directory with complaint data.
+Ensure the data is in the root directory with complaint data.
 
 ### 3. Build Vector Store
 
@@ -91,11 +90,6 @@ The application will be available at `http://localhost:8501`
 3. Review generated answers with source attribution
 4. Explore complaint sources for deeper insights
 
-### Analytics Dashboard
-1. Go to "📊 Analytics Dashboard"
-2. Explore key metrics and trends
-3. Filter by product, date range, or geography
-4. Analyze complaint patterns and distributions
 
 ## 🔧 Configuration
 
@@ -103,7 +97,6 @@ Edit `config/config.yaml` to customize:
 - Embedding models and parameters
 - Chunking strategies
 - Vector store settings
-- Dashboard configurations
 
 ## 📈 Evaluation
 
